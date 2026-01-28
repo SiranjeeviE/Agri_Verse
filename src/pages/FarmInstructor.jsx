@@ -9,214 +9,287 @@ import { CheckCircle2, Circle, PlayCircle, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 const FarmInstructor = () => {
-    const [selectedCrop, setSelectedCrop] = useState("");
-    const [crops, setCrops] = useState([]);
-    const [instructions, setInstructions] = useState([]);
-    const [userProgress, setUserProgress] = useState(null);
-    const [loading, setLoading] = useState(false);
-    useEffect(() => {
-        fetchCrops();
-    }, []);
-    useEffect(() => {
-        if (selectedCrop) {
-            fetchInstructions();
-            fetchUserProgress();
-        }
-    }, [selectedCrop]);
-    const fetchCrops = async () => {
-        const { data } = await supabase.from("crops").select("name").order("name");
-        setCrops(data || []);
-    };
-    const fetchInstructions = async () => {
-        setLoading(true);
-        const { data } = await supabase
-            .from("farm_instructions")
-            .select("*")
-            .eq("crop_name", selectedCrop)
-            .order("day");
-        setInstructions(data || []);
-        setLoading(false);
-    };
-    const fetchUserProgress = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user)
-            return;
-        const { data } = await supabase
-            .from("user_progress")
-            .select("*")
-            .eq("user_id", user.id)
-            .eq("crop_name", selectedCrop)
-            .maybeSingle();
+  const [selectedCrop, setSelectedCrop] = useState("");
+  const [crops, setCrops] = useState([]);
+  const [instructions, setInstructions] = useState([]);
+  const [userProgress, setUserProgress] = useState(null);
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    fetchCrops();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCrop) {
+      fetchInstructions();
+      fetchUserProgress();
+    }
+  }, [selectedCrop]);
+
+  const fetchCrops = async () => {
+    const { data } = await supabase.from("crops").select("name").order("name");
+
+    if (data && data.length > 0) {
+      setCrops(data);
+    } else {
+      // Fallback mock crops
+      setCrops([
+        { name: "Tomato" },
+        { name: "Rice" },
+        { name: "Wheat" },
+        { name: "Potato" },
+        { name: "Cotton" }
+      ]);
+    }
+  };
+
+  const fetchInstructions = async () => {
+    setLoading(true);
+    const { data } = await supabase
+      .from("farm_instructions")
+      .select("*")
+      .eq("crop_name", selectedCrop)
+      .order("day");
+
+    if (data && data.length > 0) {
+      setInstructions(data);
+    } else {
+      // Mock instructions logic
+      setInstructions(getMockInstructions(selectedCrop));
+    }
+    setLoading(false);
+  };
+
+  const getMockInstructions = (crop) => {
+    // Generic instructions template that works for most crops for demo
+    return [
+      { id: 1, day: 1, crop_name: crop, task: "Soil Preparation", details: `Clear the land of weeds and debris. Plough the soil to a depth of 20-30 cm to aerate it. Mix in organic compost.` },
+      { id: 2, day: 3, crop_name: crop, task: "Seed Selection & Sowing", details: `Select high-quality certified seeds. Sow them at the recommended depth and spacing for ${crop}.` },
+      { id: 3, day: 5, crop_name: crop, task: "Initial Watering", details: "Water the field immediately after sowing. Ensure soil remains moist but not waterlogged." },
+      { id: 4, day: 10, crop_name: crop, task: "Germination Check", details: `Check for germination. If gaps exist, replant immediately to ensure uniform growth.` },
+      { id: 5, day: 20, crop_name: crop, task: "First Weeding", details: "Remove small weeds manually or use appropriate mechanical weeders to prevent nutrient competition." },
+      { id: 6, day: 30, crop_name: crop, task: "Fertilizer Application", details: "Apply the first split of nitrogen fertilizer to boost vegetative growth." },
+      { id: 7, day: 45, crop_name: crop, task: "Pest Monitoring", details: `Inspect ${crop} leaves for signs of pests or disease. Apply organic pesticides if needed.` },
+      { id: 8, day: 60, crop_name: crop, task: "Irrigation Management", details: "Ensure adequate water supply during this critical flowering/fruiting stage." },
+      { id: 9, day: 90, crop_name: crop, task: "Pre-Harvest Check", details: "Check crop maturity. Stop watering 10 days before harvest to improve quality." },
+      { id: 10, day: 100, crop_name: crop, task: "Harvesting", details: `Harvest the ${crop} using appropriate tools. Store in a cool, dry place.` }
+    ];
+  };
+
+  const fetchUserProgress = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      const { data } = await supabase
+        .from("user_progress")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("crop_name", selectedCrop)
+        .maybeSingle();
+
+      if (data) {
         setUserProgress(data);
-    };
-    const startProgress = async () => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user)
-            return;
-        const { error } = await supabase.from("user_progress").insert({
-            user_id: user.id,
-            crop_name: selectedCrop,
-            current_day: 1,
-        });
-        if (error) {
-            toast.error("Failed to start progress");
-        }
-        else {
-            toast.success("Started tracking progress!");
-            fetchUserProgress();
-        }
-    };
-    const updateProgress = async (day) => {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user)
-            return;
-        const { error } = await supabase
-            .from("user_progress")
-            .update({ current_day: day + 1, last_updated: new Date().toISOString() })
-            .eq("user_id", user.id)
-            .eq("crop_name", selectedCrop);
-        if (error) {
-            toast.error("Failed to update progress");
-        }
-        else {
-            toast.success("Progress updated!");
-            fetchUserProgress();
-        }
-    };
-    const progressPercentage = userProgress && instructions.length > 0
-        ? (userProgress.current_day / instructions.length) * 100
-        : 0;
-    return (<div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20 md:pb-4">
-      <Header />
+        return;
+      }
+    }
 
-      <main className="container px-4 py-6">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Farm Instructor</h1>
-          <p className="text-muted-foreground">
-            Get step-by-step daily guidance for cultivating your crops successfully from seed to harvest
-          </p>
-        </div>
+    // Fallback: Check local storage
+    const savedProgress = localStorage.getItem(`progress_${selectedCrop}`);
+    if (savedProgress) {
+      setUserProgress(JSON.parse(savedProgress));
+    } else {
+      setUserProgress(null);
+    }
+  };
 
-        <Card className="mb-6 border-primary/20 bg-primary/5">
+  const startProgress = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const newProgress = {
+      current_day: 1,
+      crop_name: selectedCrop,
+      last_updated: new Date().toISOString()
+    };
+
+    if (user) {
+      const { error } = await supabase.from("user_progress").insert({
+        user_id: user.id,
+        ...newProgress
+      });
+      if (!error) {
+        toast.success("Started tracking progress!");
+        fetchUserProgress();
+        return;
+      }
+    }
+
+    // Fallback: Save to local storage
+    localStorage.setItem(`progress_${selectedCrop}`, JSON.stringify(newProgress));
+    toast.success("Started tracking progress (Local Mode)!");
+    setUserProgress(newProgress);
+  };
+
+  const updateProgress = async (day) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    const nextDay = day + 1;
+
+    if (user) {
+      const { error } = await supabase
+        .from("user_progress")
+        .update({ current_day: nextDay, last_updated: new Date().toISOString() })
+        .eq("user_id", user.id)
+        .eq("crop_name", selectedCrop);
+
+      if (!error) {
+        toast.success("Progress updated!");
+        fetchUserProgress();
+        return;
+      }
+    }
+
+    // Fallback: Update local storage
+    const updatedProgress = {
+      current_day: nextDay,
+      crop_name: selectedCrop,
+      last_updated: new Date().toISOString()
+    };
+    localStorage.setItem(`progress_${selectedCrop}`, JSON.stringify(updatedProgress));
+    toast.success("Progress updated (Local Mode)!");
+    setUserProgress(updatedProgress);
+  };
+  const progressPercentage = userProgress && instructions.length > 0
+    ? (userProgress.current_day / instructions.length) * 100
+    : 0;
+  return (<div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20 md:pb-4">
+    <Header />
+
+    <main className="container px-4 py-6">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold mb-2">Farm Instructor</h1>
+        <p className="text-muted-foreground">
+          Get step-by-step daily guidance for cultivating your crops successfully from seed to harvest
+        </p>
+      </div>
+
+      <Card className="mb-6 border-primary/20 bg-primary/5">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            How Farm Instructor Works
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex gap-3">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">1</span>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-1">Select Your Crop</h4>
+              <p className="text-sm text-muted-foreground">Choose the crop you want to cultivate from our database</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">2</span>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-1">Start Tracking</h4>
+              <p className="text-sm text-muted-foreground">Begin your farming journey with day-by-day instructions</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">3</span>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-1">Follow Daily Tasks</h4>
+              <p className="text-sm text-muted-foreground">Complete tasks like planting, watering, fertilizing, and harvesting</p>
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+              <span className="text-primary-foreground font-bold text-sm">4</span>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-1">Track Progress</h4>
+              <p className="text-sm text-muted-foreground">Mark tasks complete and monitor your cultivation progress</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <div className="mb-6">
+        <Select value={selectedCrop} onValueChange={setSelectedCrop}>
+          <SelectTrigger className="h-12 text-base">
+            <SelectValue placeholder="Select a crop" />
+          </SelectTrigger>
+          <SelectContent>
+            {crops.map((crop) => (<SelectItem key={crop.name} value={crop.name}>
+              {crop.name}
+            </SelectItem>))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {selectedCrop && (<>
+        {!userProgress ? (<Card className="mb-6">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary"/>
-              How Farm Instructor Works
-            </CardTitle>
+            <CardTitle>Start Your Journey</CardTitle>
+            <CardDescription>
+              Begin tracking your daily progress for {selectedCrop}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-sm">1</span>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Select Your Crop</h4>
-                <p className="text-sm text-muted-foreground">Choose the crop you want to cultivate from our database</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-sm">2</span>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Start Tracking</h4>
-                <p className="text-sm text-muted-foreground">Begin your farming journey with day-by-day instructions</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-sm">3</span>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Follow Daily Tasks</h4>
-                <p className="text-sm text-muted-foreground">Complete tasks like planting, watering, fertilizing, and harvesting</p>
-              </div>
-            </div>
-            <div className="flex gap-3">
-              <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                <span className="text-primary-foreground font-bold text-sm">4</span>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-1">Track Progress</h4>
-                <p className="text-sm text-muted-foreground">Mark tasks complete and monitor your cultivation progress</p>
-              </div>
-            </div>
+          <CardContent>
+            <Button onClick={startProgress} className="w-full" size="lg">
+              <PlayCircle className="mr-2 h-5 w-5" />
+              Start Tracking Progress
+            </Button>
           </CardContent>
-        </Card>
+        </Card>) : (<Card className="mb-6">
+          <CardHeader>
+            <CardTitle>Your Progress</CardTitle>
+            <CardDescription>
+              Day {userProgress.current_day} of {instructions.length}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Progress value={progressPercentage} className="h-3" />
+            <p className="text-sm text-muted-foreground mt-2">
+              {Math.round(progressPercentage)}% Complete
+            </p>
+          </CardContent>
+        </Card>)}
 
-        <div className="mb-6">
-          <Select value={selectedCrop} onValueChange={setSelectedCrop}>
-            <SelectTrigger className="h-12 text-base">
-              <SelectValue placeholder="Select a crop"/>
-            </SelectTrigger>
-            <SelectContent>
-              {crops.map((crop) => (<SelectItem key={crop.name} value={crop.name}>
-                  {crop.name}
-                </SelectItem>))}
-            </SelectContent>
-          </Select>
+        <div className="space-y-4">
+          {loading ? (<p className="text-center text-muted-foreground py-12">Loading instructions...</p>) : instructions.length === 0 ? (<p className="text-center text-muted-foreground py-12">
+            No instructions available for this crop yet.
+          </p>) : (instructions.map((instruction, index) => {
+            const isCompleted = userProgress && instruction.day < userProgress.current_day;
+            const isCurrent = userProgress && instruction.day === userProgress.current_day;
+            return (<Card key={instruction.id} className={isCurrent ? "border-primary" : ""}>
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-3">
+                    {isCompleted ? (<CheckCircle2 className="h-6 w-6 text-primary" />) : (<Circle className="h-6 w-6 text-muted-foreground" />)}
+                    <div>
+                      <CardTitle className="text-lg">Day {instruction.day}</CardTitle>
+                      <CardDescription>{instruction.task}</CardDescription>
+                    </div>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">{instruction.details}</p>
+                {isCurrent && (<Button onClick={() => updateProgress(instruction.day)} className="w-full">
+                  Mark as Complete
+                </Button>)}
+              </CardContent>
+            </Card>);
+          }))}
         </div>
+      </>)}
+    </main>
 
-        {selectedCrop && (<>
-            {!userProgress ? (<Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>Start Your Journey</CardTitle>
-                  <CardDescription>
-                    Begin tracking your daily progress for {selectedCrop}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button onClick={startProgress} className="w-full" size="lg">
-                    <PlayCircle className="mr-2 h-5 w-5"/>
-                    Start Tracking Progress
-                  </Button>
-                </CardContent>
-              </Card>) : (<Card className="mb-6">
-                <CardHeader>
-                  <CardTitle>Your Progress</CardTitle>
-                  <CardDescription>
-                    Day {userProgress.current_day} of {instructions.length}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Progress value={progressPercentage} className="h-3"/>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {Math.round(progressPercentage)}% Complete
-                  </p>
-                </CardContent>
-              </Card>)}
-
-            <div className="space-y-4">
-              {loading ? (<p className="text-center text-muted-foreground py-12">Loading instructions...</p>) : instructions.length === 0 ? (<p className="text-center text-muted-foreground py-12">
-                  No instructions available for this crop yet.
-                </p>) : (instructions.map((instruction, index) => {
-                const isCompleted = userProgress && instruction.day < userProgress.current_day;
-                const isCurrent = userProgress && instruction.day === userProgress.current_day;
-                return (<Card key={instruction.id} className={isCurrent ? "border-primary" : ""}>
-                      <CardHeader>
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                            {isCompleted ? (<CheckCircle2 className="h-6 w-6 text-primary"/>) : (<Circle className="h-6 w-6 text-muted-foreground"/>)}
-                            <div>
-                              <CardTitle className="text-lg">Day {instruction.day}</CardTitle>
-                              <CardDescription>{instruction.task}</CardDescription>
-                            </div>
-                          </div>
-                        </div>
-                      </CardHeader>
-                      <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">{instruction.details}</p>
-                        {isCurrent && (<Button onClick={() => updateProgress(instruction.day)} className="w-full">
-                            Mark as Complete
-                          </Button>)}
-                      </CardContent>
-                    </Card>);
-            }))}
-            </div>
-          </>)}
-      </main>
-
-      <BottomNav />
-    </div>);
+    <BottomNav />
+  </div>);
 };
 export default FarmInstructor;
