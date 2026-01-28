@@ -1,0 +1,20 @@
+project_id = "yrxuejdkxywaaxmsvwnp"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+
+[functions]
+enabled = true
+
+[functions.chatbot]
+verify_jwt = true
+
+[functions.disease-prediction]
+verify_jwt = true
