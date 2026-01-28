@@ -8,100 +8,93 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* Farming-themed color palette */
-    --background: 48 40% 98%;
-    --foreground: 142 40% 15%;
+    /* Modern vibrant farming palette */
+    --background: 156 40% 97%; /* Soft minty white */
+    --foreground: 164 45% 15%; /* Deep forest green */
 
     --card: 0 0% 100%;
-    --card-foreground: 142 40% 15%;
+    --card-foreground: 164 45% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 142 40% 15%;
+    --popover-foreground: 164 45% 15%;
 
-    /* Fresh green primary */
-    --primary: 142 76% 36%;
+    /* Premium Emerald */
+    --primary: 158 64% 45%; 
     --primary-foreground: 0 0% 100%;
     
-    /* Earthy secondary */
-    --secondary: 30 40% 60%;
-    --secondary-foreground: 142 40% 15%;
+    /* Warm Earth - Orange/Brown */
+    --secondary: 25 90% 65%;
+    --secondary-foreground: 0 0% 100%;
 
-    /* Soft muted tones */
-    --muted: 48 20% 95%;
-    --muted-foreground: 142 20% 40%;
+    --muted: 156 30% 90%;
+    --muted-foreground: 164 20% 40%;
 
-    /* Warm accent */
-    --accent: 45 93% 47%;
-    --accent-foreground: 142 40% 15%;
+    --accent: 45 93% 47%; /* Golden Yellow */
+    --accent-foreground: 164 45% 15%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 142 20% 88%;
-    --input: 142 20% 88%;
-    --ring: 142 76% 36%;
+    --border: 156 20% 85%;
+    --input: 156 20% 85%;
+    --ring: 158 64% 45%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
     
-    /* Custom farming gradients */
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 36%), hsl(160 84% 39%));
-    --gradient-card: linear-gradient(180deg, hsl(48 100% 98%), hsl(48 20% 95%));
+    /* Modern Gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(158 64% 45%), hsl(164 70% 35%));
+    --gradient-card: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5));
+    --gradient-shimmer: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.1) 75%);
     
-    /* Shadows */
-    --shadow-soft: 0 4px 20px -4px hsl(142 40% 15% / 0.1);
-    --shadow-md: 0 10px 40px -10px hsl(142 40% 15% / 0.15);
+    /* Enhanced Shadows */
+    --shadow-soft: 0 8px 32px rgba(31, 38, 135, 0.07);
+    --shadow-md: 0 10px 40px -10px rgba(0,0,0,0.1);
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 120 15% 8%;
-    --foreground: 48 20% 95%;
+    --background: 164 45% 8%;
+    --foreground: 156 20% 90%;
 
-    --card: 142 35% 12%;
-    --card-foreground: 48 20% 95%;
+    --card: 164 40% 10%;
+    --card-foreground: 156 20% 90%;
 
-    --popover: 142 35% 12%;
-    --popover-foreground: 48 20% 95%;
+    --popover: 164 40% 10%;
+    --popover-foreground: 156 20% 90%;
 
-    --primary: 142 76% 45%;
+    --primary: 158 64% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 30 30% 25%;
-    --secondary-foreground: 48 20% 95%;
+    --secondary: 25 80% 55%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 142 30% 18%;
-    --muted-foreground: 48 15% 65%;
+    --muted: 164 40% 15%;
+    --muted-foreground: 156 15% 60%;
 
     --accent: 45 93% 55%;
-    --accent-foreground: 142 40% 8%;
+    --accent-foreground: 164 45% 10%;
 
     --destructive: 0 62.8% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 142 30% 20%;
-    --input: 142 30% 20%;
-    --ring: 142 76% 45%;
+    --border: 164 30% 20%;
+    --input: 164 30% 20%;
+    --ring: 158 64% 50%;
     
-    --gradient-hero: linear-gradient(135deg, hsl(142 76% 30%), hsl(160 84% 35%));
-    --gradient-card: linear-gradient(180deg, hsl(142 35% 12%), hsl(142 30% 15%));
+    --gradient-hero: linear-gradient(135deg, hsl(158 64% 30%), hsl(164 70% 20%));
+    --gradient-card: linear-gradient(180deg, rgba(20, 30, 25, 0.8), rgba(20, 30, 25, 0.4));
     
-    --shadow-soft: 0 4px 20px -4px hsl(0 0% 0% / 0.3);
-    --shadow-md: 0 10px 40px -10px hsl(0 0% 0% / 0.4);
+    --shadow-soft: 0 4px 20px -4px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 10px 40px -10px rgba(0, 0, 0, 0.5);
+    
     --sidebar-background: 240 5.9% 10%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 224.3 76.3% 48%;
@@ -110,6 +103,20 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply bg-white/70 dark:bg-black/40 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .glass-button {
+    @apply bg-white/20 hover:bg-white/30 backdrop-blur-sm border border-white/30 transition-all;
+  }
+
+  .text-shadow-sm {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.1);
   }
 }
 
